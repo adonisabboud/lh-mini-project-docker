@@ -11,6 +11,8 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - app-net
     restart: unless-stopped
 
   pgadmin:
@@ -23,7 +25,14 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     depends_on:
       - db
+    networks:
+      - app-net
     restart: unless-stopped
 
 volumes:
   pgdata:
+
+networks:
+  app-net:
+    name: app-net
+    driver: bridge

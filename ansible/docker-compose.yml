@@ -6,6 +6,7 @@ services:
       - ../ansible_key:/home/ansible/.ssh/id_rsa:ro
       - ./inventory.ini:/home/ansible/inventory.ini:ro
       - ./deploy.yml:/home/ansible/deploy.yml:ro
+      - ./group_vars:/home/ansible/group_vars:ro
     depends_on:
       - slave1
       - slave2

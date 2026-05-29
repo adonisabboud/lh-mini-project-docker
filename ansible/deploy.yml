@@ -1,5 +1,4 @@
 ---
----
 - name: Deploy Database Server
   hosts: db
   become: yes
@@ -65,7 +64,7 @@
       copy:
         dest: /home/ansible/project/app/.env
         content: |
-          DB_HOST=ansible-slave2
+          DB_HOST=postgres-db
           DB_PORT=5432
           DB_NAME={{ postgres_db }}
           DB_USER={{ postgres_user }}
