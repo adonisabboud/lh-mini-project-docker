@@ -1,0 +1,88 @@
+---
+---
+- name: Deploy Database Server
+  hosts: db
+  become: yes
+  tasks:
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Clone the repository
+      git:
+        repo: "git@github.com:adonisabboud/lh-mini-project-docker.git"
+        dest: /home/ansible/project
+        version: main
+        accept_hostkey: yes
+        key_file: /home/ansible/.ssh/id_rsa
+      become_user: ansible
+
+    - name: Create database .env file
+      copy:
+        dest: /home/ansible/project/database/.env
+        content: |
+          POSTGRES_DB={{ postgres_db }}
+          POSTGRES_USER={{ postgres_user }}
+          POSTGRES_PASSWORD={{ postgres_password }}
+          PGADMIN_DEFAULT_EMAIL={{ pgadmin_email }}
+          PGADMIN_DEFAULT_PASSWORD={{ pgadmin_password }}
+        owner: ansible
+        mode: "0600"
+
+    - name: Start database containers
+      command: docker compose up -d
+      args:
+        chdir: /home/ansible/project/database
+
+    - name: Wait for PostgreSQL to be ready
+      command: docker exec postgres-db pg_isready -U postgres
+      register: pg_ready
+      retries: 10
+      delay: 3
+      until: pg_ready.rc == 0
+
+- name: Deploy Application Server
+  hosts: app
+  become: yes
+  tasks:
+    - name: Install Git
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Clone the repository
+      git:
+        repo: "git@github.com:adonisabboud/lh-mini-project-docker.git"
+        dest: /home/ansible/project
+        version: main
+        accept_hostkey: yes
+      become_user: ansible
+
+    - name: Create app .env file
+      copy:
+        dest: /home/ansible/project/app/.env
+        content: |
+          DB_HOST=ansible-slave2
+          DB_PORT=5432
+          DB_NAME={{ postgres_db }}
+          DB_USER={{ postgres_user }}
+          DB_PASSWORD={{ postgres_password }}
+        owner: ansible
+        mode: "0600"
+
+    - name: Build and start app containers
+      command: docker compose up -d --build
+      args:
+        chdir: /home/ansible/project/app
+
+    - name: Wait for app to be healthy
+      uri:
+        url: http://localhost:5000/health
+        status_code: 200
+      register: health
+      retries: 10
+      delay: 5
+      until: health.status == 200

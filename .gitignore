@@ -1,0 +1,4 @@
+ansible_key
+ansible_key.pub
+app/.env
+database/.env

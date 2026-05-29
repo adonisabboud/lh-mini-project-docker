@@ -1,0 +1,3 @@
+postgres_db: appdb
+postgres_user: postgres
+pgadmin_email: admin@admin.com

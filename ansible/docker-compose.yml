@@ -1,0 +1,39 @@
+services:
+  master:
+    build: ../ansible-master
+    container_name: ansible-master
+    volumes:
+      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro
+      - ./inventory.ini:/home/ansible/inventory.ini:ro
+      - ./deploy.yml:/home/ansible/deploy.yml:ro
+    depends_on:
+      - slave1
+      - slave2
+    stdin_open: true
+    tty: true
+    networks:
+      - ansible-net
+
+  slave1:
+    build: ../ansible-slave
+    container_name: ansible-slave1
+    volumes:
+      - ../ansible_key.pub:/home/ansible/.ssh/authorized_keys:ro
+      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro 
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ansible-net
+
+  slave2:
+    build: ../ansible-slave
+    container_name: ansible-slave2
+    volumes:
+      - ../ansible_key.pub:/home/ansible/.ssh/authorized_keys:ro
+      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro 
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - ansible-net
+
+networks:
+  ansible-net:
+    driver: bridge
