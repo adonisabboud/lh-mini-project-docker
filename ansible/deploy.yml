@@ -31,7 +31,7 @@
         mode: "0600"
 
     - name: Start database containers
-      command: docker compose up -d
+      command: docker exec postgres-db pg_isready -U postgres
       args:
         chdir: /home/ansible/project/database
 
@@ -78,10 +78,8 @@
         chdir: /home/ansible/project/app
 
     - name: Wait for app to be healthy
-      uri:
-        url: http://localhost:5000/health
-        status_code: 200
+      command: docker exec python-app-backend curl -f http://localhost:5000/health
       register: health
       retries: 10
       delay: 5
-      until: health.status == 200
+      until: health.rc == 0
