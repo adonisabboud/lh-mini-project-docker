@@ -1,6 +1,6 @@
 services:
   master:
-    build: ../ansible-master
+    image: adonisabboud/mini-prj-ansible:master
     container_name: ansible-master
     volumes:
       - ../ansible_key:/home/ansible/.ssh/id_rsa:ro
@@ -16,21 +16,21 @@ services:
       - ansible-net
 
   slave1:
-    build: ../ansible-slave
+    image: adonisabboud/mini-prj-ansible:slave
     container_name: ansible-slave1
     volumes:
       - ../ansible_key.pub:/home/ansible/.ssh/authorized_keys:ro
-      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro 
+      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - ansible-net
 
   slave2:
-    build: ../ansible-slave
+    image: adonisabboud/mini-prj-ansible:slave
     container_name: ansible-slave2
     volumes:
       - ../ansible_key.pub:/home/ansible/.ssh/authorized_keys:ro
-      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro 
+      - ../ansible_key:/home/ansible/.ssh/id_rsa:ro
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - ansible-net
