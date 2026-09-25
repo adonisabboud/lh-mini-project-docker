@@ -29,6 +29,10 @@
           PGADMIN_DEFAULT_PASSWORD={{ pgadmin_password }}
         owner: ansible
         mode: "0600"
+    - name: Build and start database containers
+      command: docker compose up -d
+      args:
+        chdir: /home/ansible/project/database
 
     - name: Start database containers
       command: docker exec postgres-db pg_isready -U postgres
