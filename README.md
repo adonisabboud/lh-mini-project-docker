@@ -5,24 +5,25 @@ A Flask REST API backed by PostgreSQL, fully containerized with Docker and autom
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    Ansible Master                       │
-│              (orchestrates deployment)                  │
-│                     │                                   │
-│           ┌─────────┴─────────┐                         │
-│           ▼                   ▼                         │
-│    ┌─────────────┐   ┌──────────────┐                  │
-│    │  Slave 1    │   │   Slave 2    │                  │
-│    │  (App Host) │   │  (DB Host)   │                  │
-│    │             │   │              │                  │
-│    │  Flask API  │   │  PostgreSQL  │                  │
-│    │  :5000      │   │  :5432       │                  │
-│    │             │   │  pgAdmin     │                  │
-│    │             │   │  :8080       │                  │
-│    └─────────────┘   └──────────────┘                  │
-│           │                   │                         │
-│           └───── app-net ─────┘                         │
-└─────────────────────────────────────────────────────────┘
+┌──────────────────────────── Host machine (Docker Engine) ────────────────────────────┐
+│                                                                                      │
+│   ┌──────────────────────┐        Ansible Vault ──► .env files                       │
+│   │   Ansible Master     │                                                           │
+│   │  deploy.yml          │──── SSH :22 ────┬──────────────────────┐                  │
+│   │  inventory.ini       │                 │                      │                  │
+│   └──────────────────────┘                 ▼                      ▼                  │
+│                                ┌───────────────────┐   ┌────────────────────────┐    │
+│   GitHub ── git clone ───────► │ Slave 1 (App)     │   │ Slave 2 (DB)           │    │
+│                                │                   │   │                        │    │
+│                                │  Flask API :5000  │   │  PostgreSQL :5432      │    │
+│                                │                   │   │       ▲                │    │
+│                                │                   │   │  pgAdmin :8080         │    │
+│                                └─────────┬─────────┘   └───────────┬────────────┘    │
+│                                          └──────── app-net ────────┘                 │
+│   Deploy order: ① clone repo  ② write .env  ③ start DB + wait ready  ④ start app      │
+└──────────────────────────────────────────┬───────────────────────────────────────────┘
+                                           ▼
+                         localhost:5000 (API)   localhost:8080 (pgAdmin)
 ```
 
 The setup simulates a two-server deployment using Docker containers as Ansible-managed nodes:
